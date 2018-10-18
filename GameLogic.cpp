@@ -2,7 +2,10 @@
 
 void draw_player_plane()
 {   //draws a complete player plane graphic
-    glColor3f(1.0f, 1.0f, 1.0f); 
+    if(!p_invincibility)
+        glColor3f(1.0f, 1.0f, 1.0f); 
+    else
+        glColor3f(0.556863f,   0.137255f,  0.137255f); 
     glPushMatrix();
         glTranslatef(g_cursor_x,1000-g_cursor_y,0.0f); 
         //100x100 for testing, 500x500 for changing design
@@ -108,21 +111,88 @@ void spawn_enemy_plane()
     //std::cerr<<"CORNER COORDS: LDCORNER: "<<plane.getLDXCorner()<<","<<plane.getLDYCorner()<<std::endl;
 }
 
+void spawn_enemy_boss_1()
+{
+    //spawns a helicopter boss -> set wing coords and plane coords (also updates the corners for collisions)
+    heliboss.setWing1x(cos(heliboss.getTheta())*0.015f);
+    heliboss.setWing1y(sin(heliboss.getTheta())*0.015f);
+    heliboss.setWing2x(cos(heliboss.getTheta())*0.3f);
+    heliboss.setWing2y(sin(heliboss.getTheta())*0.3f);
+    heliboss.setXcord(500);
+    heliboss.setYcord(825.0f);
+}
+
+void draw_enemy_boss_1()
+{  
+   //draws a complete graphic of the first boss
+   glColor3f(1.0f, 1.0f, 1.0f); 
+        glPushMatrix();
+            //translate on saved coords
+            glTranslatef( heliboss.getXcord(), heliboss.getYcord(),0.0f); 
+            glScalef(200.0f, 200.0f, 1.0f);
+            glRotatef(-90, 0.0f, 0.0f, 1.0f);
+            draw_enemy_helicopter_graphic();
+            draw_helicopter_wings();
+            //left half complete, now mirror (scale by y = -1 and draw to complete design)
+            glScalef(1.0f,-1.0f,1.0f);
+            draw_enemy_helicopter_graphic();
+            //scale again and draw the second wing (so that there are 2 wings on opposite sides to the wing cirlce)
+            glScalef(-1.0f,1.0f,1.0f);
+            draw_helicopter_wings();
+        glPopMatrix(); 
+}
+
+void moveFirstBoss(){
+    //moves the first boss randomly either left (1) or right (2)
+    int xcord = uni(rng);
+    if(xcord == 1 && heliboss.getXcord() > 60.0f)
+        heliboss.setXcord( heliboss.getXcord() - g_boss_1_xcord_offset);
+    if(xcord == 2 && heliboss.getXcord() < 936.0f)
+       heliboss.setXcord( heliboss.getXcord() + g_boss_1_xcord_offset); 
+}
+
 void checkPlaneEnemyCollision()
 {
+    // go through the planes vector, check collision conditions for each enemy plane with the player plane
     for(std::vector<Enemyplane>::iterator EPit = EPlanevector.begin(); EPit!= EPlanevector.end(); ++EPit){
                 if( !(g_cursor_x < (*EPit).getLDXCorner()-20 || g_cursor_x > (*EPit).getRUXCorner()+20 || 1000-g_cursor_y > (*EPit).getRUYCorner()+30 || 1000-g_cursor_y < (*EPit).getLDYCorner()-30)  ){
                     //check collision in terms of the player plane corners compared to the enemy plane corners
                     EPlanevector.erase(EPit);
                     --EPit;
                    g_lives--;
+                   p_invincibility = true;
+                   glutTimerFunc(1000/5, playerinvincibilitytimer, 0);
                 }
-                    
     }
 }
 
-void spawn_player_bonus_life()
+void checkPlayerBoss1Collision()
+{               //object-to-object collision condition
+                if( !(g_cursor_x < heliboss.getLDXCorner()-20 || g_cursor_x > heliboss.getRUXCorner()+20 || 1000-g_cursor_y > heliboss.getRUYCorner()+30 || 1000-g_cursor_y < heliboss.getLDYCorner()-30)  ){
+                    //check collision in terms of the player plane corners compared to the enemy plane corners
+                  //  std::cerr<<"COLLISION"<<std::endl;
+                    if(!p_invincibility){//if the Pplane is not invincible lose lives and activate invincibility
+                        g_lives--;
+                        p_invincibility = true;
+                        glutTimerFunc(500, playerinvincibilitytimer, 0);
+                    }
+                }
+                else{}
+                 //   std::cerr<<"NO COLLISION"<<std::endl;
+                    
+}
+
+void updateGameStatus()
 {
+    //Game status: default (basic planes), first boss etc
+    if(g_score_total<100)
+        g_state = g_level_first;
+    else
+        g_state = g_level_boss_1;
+}
+
+void spawn_player_bonus_life()
+{       //every given score spawn a bonus life at a random location
        int xcord = unixcord(rng);
        PlayerLives life;
        life.setCords(xcord,975);

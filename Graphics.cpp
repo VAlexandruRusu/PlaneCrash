@@ -150,6 +150,120 @@ void draw_enemy_planes_hitbox()
     glEnd();
 }
 
+
+void draw_helicopter_steps(float i)
+{
+     float stepsline1[2][2] = 
+    {
+        {    i*0.1f,0.1f   },
+        {    i*0.1f,0.125f},
+    };
+        
+    glBegin(GL_LINE_STRIP);
+        for(int i=0;i<2;i++){
+            glVertex2fv(stepsline1[i]);
+        }
+    glEnd();
+        
+     float stepsline2[2][2] = 
+    {
+        {    i*0.05f,0.125f   },
+        {    i*0.15f,0.125f},
+    };
+        
+    glBegin(GL_LINE_STRIP);
+        for(int i=0;i<2;i++){
+            glVertex2fv(stepsline2[i]);
+        }
+    glEnd();
+}
+
+void draw_helicopter_shell()
+{
+    static float vertex[10][2] = 
+        {
+            {    0.4f,0.0f   },
+            {    0.2f,0.1f   },
+            {    0.0f,0.1f   },
+            {    -0.2f,0.1f  },
+            {   -0.4f,0.05f},
+            {   -0.6f,0.025f},
+            {   -0.6f,0.1f},
+            {   -0.65f,0.1f},
+            {   -0.65f,0.025f},
+            {   -0.85f,0.0f}
+        };
+        
+        int rows =  sizeof vertex / sizeof vertex[0];
+        glBegin(GL_LINE_STRIP);
+            for(int i=0;i<rows;i++){
+                glVertex2fv(vertex[i]);
+            }
+        glEnd();
+}
+
+void draw_helicopter_hitbox()
+{
+     static float vertex[4][2] = 
+        {
+            {    0.4f,-0.125f   },
+            {    -0.85f,-0.125f    },
+            {    -0.85f,0.125f     },
+            {    0.4f,0.125f       }
+        };
+        
+        int rows =  sizeof vertex / sizeof vertex[0];
+        glBegin(GL_LINE_LOOP);
+            for(int i=0;i<rows;i++){
+                glVertex2fv(vertex[i]);
+            }
+        glEnd();
+}
+
+void draw_helicopter_wings_base(float squarel)
+{
+        float wingsbase[4][2] = 
+        {
+            {    -squarel,squarel   },
+            {    squarel,squarel},
+            {       squarel,-squarel},
+            {    -squarel,-squarel}
+        };
+    
+        glBegin(GL_LINE_LOOP);
+            for(int i=0;i<4;i++){
+                glVertex2fv(wingsbase[i]);
+            }
+        glEnd();
+}
+
+void draw_helicopter_wings()
+{
+        float wings[2][2] = 
+        {
+            {    heliboss.getWing1x(),heliboss.getWing1y()  },
+            {    heliboss.getWing2x(),heliboss.getWing2y()}
+        };
+    
+        glBegin(GL_LINE_LOOP);
+            for(int i=0;i<2;i++){
+                glVertex2fv(wings[i]);
+            }
+        glEnd();
+}
+
+void draw_enemy_helicopter_graphic()
+{   //draws left half of the enemy planes graphic
+        draw_helicopter_hitbox();
+        draw_helicopter_shell();
+        draw_helicopter_steps(1);
+        draw_helicopter_steps(-1.0f);
+        draw_helicopter_wings_base(0.035f);
+        DrawArc(0,0,0.015,0,180,500);
+}
+
+
+
 //PART 3: Perifery game graphics (menus, borders)
 
 unsigned int make_border(int state)
@@ -254,6 +368,8 @@ void draw_menu()
         
         
 }
+
+
 
 
 
